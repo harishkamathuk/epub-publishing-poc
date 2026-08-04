@@ -197,7 +197,7 @@ class MainTests(unittest.TestCase):
             output_text = stdout.getvalue()
             self.assertEqual(result, 0)
             self.assertIn("Including chapters:", output_text)
-            self.assertIn("drafts\\chapter-01.md", output_text)
+            self.assertIn("drafts/chapter-01.md", output_text.replace("\\", "/"))
             self.assertIn(f"Output path: {output}", output_text)
             self.assertIn("EPUB build completed successfully.", output_text)
 
