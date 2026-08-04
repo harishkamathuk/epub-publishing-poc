@@ -1,5 +1,7 @@
 # Byte-compiled / optimized / DLL files
+**/__pycache__/
 __pycache__/
+*.pyc
 *.py[codz]
 *$py.class
 
@@ -216,3 +218,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local publishing toolchain
+tools/

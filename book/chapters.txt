@@ -1,0 +1,3 @@
+drafts/chapter-01.md
+drafts/chapter-02.md
+drafts/chapter-03.md

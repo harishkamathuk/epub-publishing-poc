@@ -1,0 +1,63 @@
+/* Basic EPUB typography */
+
+body {
+  font-family: serif;
+  line-height: 1.5;
+  margin: 5%;
+  text-align: left;
+}
+
+/* Paragraphs */
+
+p {
+  margin-top: 0;
+  margin-bottom: 0.8em;
+}
+
+/* Headings */
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  page-break-after: avoid;
+}
+
+h1 {
+  font-size: 1.8em;
+  text-align: center;
+  margin-top: 1em;
+  margin-bottom: 1.5em;
+}
+
+h2 {
+  font-size: 1.4em;
+}
+
+h3 {
+  font-size: 1.15em;
+}
+
+/* Images */
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1em auto;
+}
+
+/* Block quotations */
+
+blockquote {
+  margin: 1em 1.5em;
+  padding-left: 1em;
+  border-left: 0.2em solid #999;
+  font-style: italic;
+}
+
+blockquote p:last-child {
+  margin-bottom: 0;
+}

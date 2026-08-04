@@ -1,0 +1,44 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build EPUB",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "scripts/build_book.py"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Validate EPUB",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "scripts/validate_book.py"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build and Validate EPUB",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Build EPUB",
+        "Validate EPUB"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}
