@@ -1,0 +1,113 @@
+name: Publish EPUB
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version tag, for example v0.1.0
+        required: true
+        type: string
+      prerelease:
+        description: Mark the GitHub Release as a prerelease
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-epub
+  cancel-in-progress: false
+
+jobs:
+  publish-epub:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fail unless running from main
+        run: |
+          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+            echo "This workflow may only be run from the main branch."
+            echo "Current ref: ${GITHUB_REF}"
+            exit 1
+          fi
+
+      - name: Validate version format
+        run: |
+          if ! printf '%s' "${{ inputs.version }}" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Version must match v<number>.<number>.<number>."
+            echo "Received: ${{ inputs.version }}"
+            exit 1
+          fi
+
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Fail if tag already exists
+        run: |
+          if git rev-parse "${{ inputs.version }}" >/dev/null 2>&1; then
+            echo "Tag already exists: ${{ inputs.version }}"
+            exit 1
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install Pandoc and unzip
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes pandoc unzip
+
+      - name: Download EPUBCheck
+        run: |
+          curl -L https://github.com/w3c/epubcheck/releases/download/v5.3.0/epubcheck-5.3.0.zip -o epubcheck-5.3.0.zip
+          unzip -q epubcheck-5.3.0.zip
+          echo "EPUBCHECK_JAR=${GITHUB_WORKSPACE}/epubcheck-5.3.0/epubcheck.jar" >> "$GITHUB_ENV"
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Build EPUB
+        run: python scripts/build_book.py
+
+      - name: Validate EPUB
+        run: python scripts/validate_book.py
+
+      - name: Prepare release assets
+        run: |
+          mv dist/epub-publishing-poc.epub "dist/epub-publishing-poc-${{ inputs.version }}.epub"
+          sha256sum "dist/epub-publishing-poc-${{ inputs.version }}.epub" > "dist/epub-publishing-poc-${{ inputs.version }}.sha256"
+
+      - name: Create and push annotated tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ inputs.version }}" -m "Release ${{ inputs.version }}"
+          git push origin "${{ inputs.version }}"
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          prerelease_flag=""
+          if [ "${{ inputs.prerelease }}" = "true" ]; then
+            prerelease_flag="--prerelease"
+          fi
+
+          gh release create "${{ inputs.version }}" \
+            "dist/epub-publishing-poc-${{ inputs.version }}.epub" \
+            "dist/epub-publishing-poc-${{ inputs.version }}.sha256" \
+            --title "${{ inputs.version }}" \
+            --notes "EPUB release for ${{ inputs.version }}" \
+            ${prerelease_flag}
