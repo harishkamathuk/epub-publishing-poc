@@ -1,0 +1,15 @@
+---
+title: "EPUB Publishing POC"
+creator:
+  - Codex
+author:
+  - "Harish Kamath"
+lang: "en-GB"
+rights: "All rights reserved"
+identifier: "urn:uuid:5fbd3ce2-e753-4b36-b950-45a5293659dd"
+publisher: Local Repository
+description: >
+  Disposable proof of concept for building selected Markdown files into an EPUB
+  through a local, manifest-driven process.
+cover-image: book/assets/cover.png
+...
