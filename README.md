@@ -12,8 +12,8 @@ drafts/     work-in-progress manuscript chapters
 planning/   planning notes kept for repository compatibility
 reference/  research notes kept for repository compatibility
 book/       publication manifest, metadata, and EPUB styling
-scripts/    Python build entry point
-tests/      unit tests for the build script
+scripts/    Python entry points for local build and validation
+tests/      unit tests for the build and validation scripts
 .vscode/    shared editor task for local builds
 dist/       generated build output
 ```
@@ -26,12 +26,31 @@ published unless they are explicitly added to the manifest.
 
 - Python 3
 - Pandoc
+- EPUBCheck JAR
 
-Check that both are available:
+Check the core tools first:
 
 ```bash
 python --version
 pandoc --version
+```
+
+### EPUBCheck JAR setup
+
+Set `EPUBCHECK_JAR` to the EPUBCheck JAR file and ensure Java is available on
+`PATH`.
+
+PowerShell example:
+
+```powershell
+$env:EPUBCHECK_JAR = 'C:\path\to\epubcheck.jar'
+java -version
+```
+
+In this mode, `python scripts/validate_book.py` will run:
+
+```text
+java -jar <EPUBCHECK_JAR> dist/epub-publishing-poc.epub
 ```
 
 ## Unit tests
@@ -56,20 +75,49 @@ The expected output location is:
 dist/epub-publishing-poc.epub
 ```
 
-## Build from VS Code
+Successful EPUB creation means the package was built. It does not, by itself,
+mean the EPUB conforms to the standard.
 
-Open the command palette, run `Tasks: Run Build Task`, and select `Build EPUB`.
-The shared task runs:
+## Validate from the terminal
+
+Validate the default EPUB with EPUBCheck:
+
+```bash
+python scripts/validate_book.py
+```
+
+This validates the fixed default EPUB:
+
+```text
+dist/epub-publishing-poc.epub
+```
+
+To build and then validate from the terminal:
 
 ```bash
 python scripts/build_book.py
+python scripts/validate_book.py
+```
+
+Successful EPUB conformance validation means EPUBCheck completed without errors.
+It does not perform editorial review, spell-checking, or visual reader testing.
+
+## Build from VS Code
+
+Open the command palette, run `Tasks: Run Build Task`, and use the default build
+task `Build and Validate EPUB`.
+
+The shared tasks run:
+
+```bash
+python scripts/build_book.py
+python scripts/validate_book.py
 ```
 
 ## Future phases
 
 The following phases are planned, but they are not claimed as implemented here:
 
-- EPUBCheck validation
 - GitHub preview workflow
 - PR validation
 - Manual versioned release workflow
