@@ -1,0 +1,56 @@
+name: Preview EPUB
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preview-epub:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install Pandoc and unzip
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes pandoc unzip
+
+      - name: Download EPUBCheck
+        run: |
+          curl -L https://github.com/w3c/epubcheck/releases/download/v5.3.0/epubcheck-5.3.0.zip -o epubcheck-5.3.0.zip
+          unzip -q epubcheck-5.3.0.zip
+          echo "EPUBCHECK_JAR=${GITHUB_WORKSPACE}/epubcheck-5.3.0/epubcheck.jar" >> "$GITHUB_ENV"
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Build EPUB
+        run: python scripts/build_book.py
+
+      - name: Validate EPUB
+        run: python scripts/validate_book.py
+
+      - name: Upload preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: epub-preview-${{ github.sha }}
+          path: dist/epub-publishing-poc.epub
+          retention-days: 14
